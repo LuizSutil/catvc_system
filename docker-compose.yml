@@ -1,0 +1,111 @@
+version: '3.7'
+
+x-minio-common: &minio-common
+  image: quay.io/minio/minio:RELEASE.2022-05-19T18-20-59Z
+  command: server --console-address ":9001" http://minio{1...4}/data{1...2}
+  networks:
+      - catnet
+  expose:
+    - "9000"
+    - "9001"
+  # environment:
+    # MINIO_ROOT_USER: minioadmin
+    # MINIO_ROOT_PASSWORD: minioadmin
+  healthcheck:
+    test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+    interval: 30s
+    timeout: 20s
+    retries: 3
+
+
+volumes:
+  grafana_data: {}
+  data1-1:
+  data1-2:
+  data2-1:
+  data2-2:
+  data3-1:
+  data3-2:
+  data4-1:
+  data4-2:
+
+networks:
+  catnet:
+    driver: bridge
+
+services:
+
+  nginx:
+    image: nginx:1.19.2-alpine
+    hostname: nginx
+    networks:
+      - catnet
+    volumes:
+      - ./minio/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    depends_on:
+      - minio1
+      - minio2
+      - minio3
+      - minio4
+  minio1:
+    <<: *minio-common
+    hostname: minio1
+    volumes:
+      - data1-1:/data1
+      - data1-2:/data2
+
+  minio2:
+    <<: *minio-common
+    hostname: minio2
+    volumes:
+      - data2-1:/data1
+      - data2-2:/data2
+  minio3:
+    <<: *minio-common
+    hostname: minio3
+    volumes:
+      - data3-1:/data1
+      - data3-2:/data2
+
+  minio4:
+    <<: *minio-common
+    hostname: minio4
+    volumes:
+      - data4-1:/data1
+      - data4-2:/data2
+
+  grafana:
+    container_name: "grafana"
+    build: ./grafana
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - catnet
+
+  prometheus:
+    container_name: "prometheus"
+    image: prom/prometheus:v2.35.0
+    restart: always
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - catnet
+
+  s7driver:
+    container_name: "s7driver"
+    build: ./s7driver
+    restart: always
+    ports:
+      - 8000
+    networks:
+      - catnet
+
+
