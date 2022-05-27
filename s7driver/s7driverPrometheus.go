@@ -175,10 +175,6 @@ func ReadDB(dbBlock DbReadMap, plcClient *gos7.Client){
 		tagError.With(prometheus.Labels{"tagError":tcpDevice}).Set(0)
 		return
 	}
-
-
-	fmt.Println(buffer)
-
 	// divide up dbBlock.addresses
 
 	var dividedBlock [][]PlcStructure
@@ -208,9 +204,10 @@ func dumpBufferVals(buffer []byte, addresses []PlcStructure){
 	for _, unit := range addresses{
 		switch unit.ValueType {
 		    case "Real":
-			    var result uint32
-					s7.GetValueAt(buffer, unit.dbStart, &result) 
+					result := s7.GetRealAt(buffer, unit.dbStart - 2) 
 					value := result
+
+					fmt.Println(result)
 					// write tag to prometheus object
 					tagData.With(prometheus.Labels{"tag":unit.DbAddress}).Set(float64(value))
 

@@ -2,14 +2,44 @@ global:
   scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
   evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
   # scrape_timeout is set to the global default (10s).
-
+  external_labels:
+      monitor: 'prometheus'
 scrape_configs:
-  - job_name: 'prometheus'
+
+  - job_name: 's7data'
     scrape_interval: 0s100ms
     metrics_path: '/metrics'
     static_configs:
       - targets: ['s7driver:8080']
-      # - targets: ['grafana:3000']
-      # - targets: ['prometheus:9090']
 
-        
+  - job_name: 'minio'
+    scrape_interval: 100ms
+    metrics_path: /minio/prometheus/metrics
+    static_configs:
+      - targets: ['minio:9000']
+
+
+  - job_name: 'prometheus'
+    scrape_interval: 1s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['prometheus:9090']
+
+  - job_name: 'grafana'
+    scrape_interval: 1s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['grafana:3000']
+
+  - job_name: 'thanos-query'
+    static_configs:
+      - targets: ['thanos_querier:10902']
+      
+  - job_name: 'thanos-compact'
+    static_configs:
+      - targets: ['thanos_compactor:10902']
+
+  - job_name: 'thanos-store'
+    static_configs:
+      - targets: ['thanos_store:10902']
+          
