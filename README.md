@@ -18,10 +18,15 @@ de leitura e velocidade de leitura.
 
 Thanos é dividio nos processos sidecar, store, querier, compactor e query frontend.
   -- Sidecar: Capta os dados do prometheus e manda para o nosso banco de dados
+  
   -- Store: API Gateway para buscar os dados do sidecar/banco
+  
   -- Querier: Usado para unificar todos os Sidecars 
+  
   -- Query Frontend: Usado como um emulador de prometheus do thanos para o grafana, server os dados
+  
   -- Compactor: Compacta os dados do banco em blocos dependendo das configurações desejadas
+  
  
  ## MinIO
  
